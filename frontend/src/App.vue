@@ -25,13 +25,15 @@
 
       <div class="user-control">
         <p>Logged as: <strong>{{ userRole }}</strong></p>
-        <button @click="toggleRole" class="btn-toggle">Schimbă în {{ userRole === 'manager' ? 'User' : 'Manager' }}</button>
+        <button @click="handleLogout" class="btn-logout">
+          Logout
+        </button>
       </div>
     </aside>
 
-<main :class="{ 'main-content': !$route.meta.hideSidebar }">      
+<main :class="{ 'main-content': !$route.meta.hideSidebar, 'auth-layout': $route.meta.hideSidebar }">      
   <router-view />
-    </main>
+</main>
   </div>
 </template>
 
@@ -110,9 +112,9 @@ body { font-family: sans-serif; background-color: #f4f7f6; color: #333; }
 }
 
 .user-control { border-top: 1px solid #34495e; padding-top: 20px; font-size: 0.8rem; }
-.btn-toggle {
+.btn-logout {
   margin-top: 10px;
-  background: #e74c3c;
+  background: #e74c3c; /* Roșu */
   color: white;
   border: none;
   padding: 10px;
@@ -120,13 +122,34 @@ body { font-family: sans-serif; background-color: #f4f7f6; color: #333; }
   cursor: pointer;
   width: 100%;
   font-weight: bold;
+  transition: 0.3s;
 }
 
-.main-content { margin-left: 260px; flex-grow: 1; padding: 30px; }
+.btn-logout:hover {
+ 
+  background: #c0392b; 
+}
+
+.auth-layout {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center; 
+  align-items: center;     
+  min-height: 100vh;
+  width: 100%;             
+}
+
+.main-content {
+  margin-left: 260px;
+  flex-grow: 1;
+  padding: 30px;
+  min-height: 100vh;
+}
 
 @media (max-width: 768px) {
   .sidebar { width: 70px; padding: 10px; align-items: center; }
   .menu-label, .logo span, .user-control p, .nav-links a span { display: none; }
   .main-content { margin-left: 70px; }
+  .auth-layout { margin-left: 0;}
 }
 </style>
