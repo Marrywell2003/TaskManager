@@ -1,11 +1,9 @@
 import { db } from '../firebaseConfig';
 import { collection, addDoc, getDocs, deleteDoc, doc } from "firebase/firestore";
 
-// Referința către colecția de task-uri din baza de date
 const tasksCollection = collection(db, 'tasks');
 
 export const taskService = {
-  // Funcția pentru a adăuga un task nou
   async addTask(taskData) {
     try {
       const docRef = await addDoc(tasksCollection, taskData);
@@ -16,7 +14,6 @@ export const taskService = {
     }
   },
 
-  // Funcția pentru a prelua toate task-urile
   async getTasks() {
     try {
       const snapshot = await getDocs(tasksCollection);

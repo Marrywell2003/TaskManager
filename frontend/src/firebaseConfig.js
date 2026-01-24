@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore"; // Baza de date cerută în Etapa 3
-import { getAuth } from "firebase/auth";       // Pentru autentificarea de mai târziu
+import { getFirestore } from "firebase/firestore"; 
+import { getAuth } from "firebase/auth";       
 
 const firebaseConfig = {
   apiKey: "AIzaSyAxcBUSE1-qKTgPkN9a7U8yYByGcb5fdKY",
@@ -12,10 +12,8 @@ const firebaseConfig = {
   measurementId: "G-MB6EBVVK6Z"
 };
 
-// Inițializăm aplicația
 const app = initializeApp(firebaseConfig);
 
-// Inițializăm serviciile și le exportăm pentru a fi folosite în componente
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 
