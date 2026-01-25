@@ -7,17 +7,17 @@
       <form @submit.prevent="handleRegister">
         <div class="name-row">
           <div class="input-group">
-            <label>First Name</label>
+            <label>First name</label>
             <input v-model="firstName" type="text" placeholder="e.g. Maria" required />
           </div>
           <div class="input-group">
-            <label>Last Name</label>
+            <label>Last name</label>
             <input v-model="lastName" type="text" placeholder="e.g. Popescu" required />
           </div>
         </div>
 
         <div class="input-group">
-          <label>Email Address</label>
+          <label>Email address</label>
           <input v-model="email" type="email" placeholder="maria@example.com" required />
         </div>
         

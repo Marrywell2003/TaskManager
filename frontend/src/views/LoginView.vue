@@ -48,6 +48,7 @@ import { ref } from 'vue';
 import { auth } from '@/firebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'vue-router';
+import axios from 'axios';
 
 const email = ref('');
 const password = ref('');
@@ -57,12 +58,42 @@ const router = useRouter();
 const handleLogin = async () => {
   loading.value = true;
   try {
-    await signInWithEmailAndPassword(auth, email.value, password.value);
-    router.push('/'); 
-  } catch (error) {
-    let errorMessage = "Invalid email or password.";
-    if (error.code === 'auth/user-not-found') errorMessage = "User not found.";
-    if (error.code === 'auth/wrong-password') errorMessage = "Incorrect password.";
+    const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
+    const user = userCredential.user;
+
+    const response = await axios.get(`http://localhost:5000/api/users/profile/${user.uid}`);
+    const userData = response.data;
+
+    localStorage.setItem('userRole', userData.role);
+    localStorage.setItem('userName', userData.fullName);
+
+    if (userData.role === 'manager') {
+      router.push('/dashboard-manager');
+    } else {
+      router.push('/dashboard-employee'); 
+    }
+  } catch(error){
+    console.error("Authentication error:", error);
+    let errorMessage = "An unexpected error occurred";
+
+    if (error.response) {
+      errorMessage = error.response.data.message || "Could not verify user role";
+    } 
+    else if (error.code) {
+      switch (error.code) {
+        case 'auth/user-not-found':
+          errorMessage = "No user found with this email";
+          break;
+        case 'auth/wrong-password':
+          errorMessage = "Incorrect password. Please try again";
+          break;
+        case 'auth/invalid-email':
+          errorMessage = "The email address is not valid";
+          break;
+        default:
+          errorMessage = error.message;
+      }
+    }
     
     alert(errorMessage);
   } finally {
@@ -72,12 +103,12 @@ const handleLogin = async () => {
 
 const handleForgotPassword = async () => {
   if (!email.value) {
-    alert("Please enter your email address first to reset your password.");
+    alert("Please enter your email address first to reset your password");
     return;
   }
   try {
     await sendPasswordResetEmail(auth, email.value);
-    alert("Password reset email sent! Check your inbox.");
+    alert("Password reset email sent! Check your inbox");
   } catch (error) {
     alert("Error: " + error.message);
   }

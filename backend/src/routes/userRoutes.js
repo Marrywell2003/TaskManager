@@ -1,14 +1,13 @@
+//tot ce e legat de oameni
+
 const express = require('express');
 const router = express.Router();
-// Importăm configurația admin (pe care o vom face la pasul următor)
-const { db } = require('../firebaseAdmin'); 
+const { db } = require('../config/firebaseAdmin'); 
 
-// RUTA: GET /api/users/profile/:uid
 router.get('/profile/:uid', async (req, res) => {
   try {
     const uid = req.params.uid;
     
-    // Serverul tău interoghează Firestore
     const userDoc = await db.collection('users').doc(uid).get();
 
     if (!userDoc.exists) {
@@ -17,11 +16,14 @@ router.get('/profile/:uid', async (req, res) => {
 
     const userData = userDoc.data();
 
-    // Aici poți face PRELUCRAREA datelor (cum ai dorit)
-    // De exemplu, poți adăuga un câmp calculat sau să loghezi accesul
-    console.log(`Profile accessed for: ${userData.fullName}`);
+    console.log(`[AUTH] User: ${userData.email} | Role: ${userData.role}`);
 
-    res.json(userData); // Trimitem datele către Vue
+    res.json({
+        uid: uid,
+        fullName: userData.fullName || `${userData.firstName} ${userData.lastName}`,
+        email: userData.email,
+        role: userData.role 
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

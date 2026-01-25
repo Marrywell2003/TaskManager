@@ -1,15 +1,16 @@
 <template>
   <div class="dashboard">
     <h2>Tablou de bord</h2>
-    
+  
     <div class="stats-grid">
+      <StatCard label="Total users:" :value="stats.totalUsers" />
       <StatCard label="Total Task-uri" :value="stats.totalTasks" />
       <StatCard label="Finalizate" :value="stats.completedTasks" />
       <StatCard label="Rata de succes" :value="stats.efficiencyRate" />
     </div>
 
     <div class="activity-section">
-      <h3>Activitate Recentă</h3>
+      <h3>Recent activity</h3>
       <div class="activity-list">
         <div v-for="item in activities" :key="item.id" class="activity-item">
           <div class="activity-info">
@@ -35,7 +36,7 @@ import apiService from '@/services/apiService';
 import StatCard from '@/components/StatCard.vue';
 import StatusBadge from '@/components/StatusBadge.vue';
 
-const stats = ref({ totalTasks: 0, completedTasks: 0, efficiencyRate: '0%' });
+const stats = ref({ totalUsers:0, totalTasks: 0, completedTasks: 0, efficiencyRate: '0%' });
 const isOnline = ref(false);
 const activities = ref([]);
 
@@ -44,12 +45,12 @@ onMounted(async () => {
     const [statsRes, statusRes, activityRes] = await Promise.all([
       apiService.getStats(),
       apiService.getStatus(),
-      apiService.getActivities() // <--- Nou
+      apiService.getActivities() 
     ]);
     
     stats.value = statsRes.data;
     isOnline.value = statusRes.data.status === 'Online';
-    activities.value = activityRes.data; // <--- Nou
+    activities.value = activityRes.data; 
   } catch (error) {
     console.error("Eroare la conectarea cu backend-ul:", error);
   }

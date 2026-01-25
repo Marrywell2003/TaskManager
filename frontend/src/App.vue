@@ -6,14 +6,14 @@
       <nav class="nav-links">
         <router-link to="/">Dashboard</router-link>
 
-        <template v-if="userRole === 'manager'">
+        <template v-if="userRole === 'Manager'">
           <div class="menu-label">ADMINISTRARE</div>
           <router-link to="/manage-tasks"> Manage tasks </router-link>
           <router-link to="/team"> My team</router-link>
           <router-link to="/reports"> Raports </router-link>
         </template>
 
-        <template v-if="userRole === 'user'">
+        <template v-if="userRole === 'Employee'">
           <div class="menu-label">TASKS</div>
           <router-link to="/my-tasks">My tasks</router-link>
           <router-link to="/history">History</router-link>        
@@ -42,18 +42,23 @@ import { ref, onMounted } from 'vue';
 import { auth } from '@/firebaseConfig';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { useRouter } from 'vue-router';
+import axios from 'axios';
 
-const userRole = ref('user');//este rolul default
+const userRole = ref(null);//este rolul default
 const router = useRouter();
 
 onMounted(() => {
-  onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, async(user) => {
     if (user) {
-      if (user.email.includes('admin') || user.email.includes('manager')) {
-        userRole.value = 'manager';
-      } else {
-        userRole.value = 'user';
+      try {
+        const response = await axios.get(`http://localhost:5000/api/users/profile/${user.uid}`);
+        userRole.value = response.data.role; 
+      } catch (error) {
+        console.error("Error fetching user role:", error);
+        userRole.value = 'user'; 
       }
+    } else {
+      userRole.value = null;
     }
   });
 });
@@ -61,9 +66,10 @@ onMounted(() => {
 const handleLogout = async () => {
   try {
     await signOut(auth);
+    userRole.value = null;
     router.push('/login');
   } catch (error) {
-    console.error("Eroare la logout:", error);
+    console.error("Logout error :", error);
   }
 };
 </script>
