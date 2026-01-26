@@ -9,7 +9,7 @@
         <template v-if="authStore.isManager">
           <div class="menu-label">ADMINISTRARE</div>
           <router-link to="/manage-tasks"> Manage tasks </router-link>
-          <router-link to="/team"> My team</router-link>
+          <!-- <router-link to="/team"> My team</router-link> -->
           <router-link to="/reports"> Raports </router-link>
         </template>
 

@@ -55,6 +55,23 @@ router.get('/profile/:uid',verifyToken, async (req, res) => {
   }
 });
 
+router.get('/employees', verifyToken, async (req, res) => {
+  try {
+    const snapshot = await db.collection('users').where('role', '==', 'Employee').get();
+    
+    const employees = snapshot.docs.map(doc => ({
+      uid: doc.id,
+      fullName: doc.data().fullName || `${doc.data().firstName} ${doc.data().lastName}`
+    }));
+
+    res.json(employees);
+  } catch (error) {
+    res.status(500).json({ error: "Eroare la preluarea listei de angajați" });
+  }
+});
+
+
+
 
 
 module.exports = router;

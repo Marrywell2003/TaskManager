@@ -1,18 +1,30 @@
-import { ref } from 'vue'
-import { defineStore } from 'pinia'
+import { defineStore } from 'pinia';
+import apiService from '@/services/apiService';
 
-export const useTaskStore = defineStore('tasks', () => {
-  const tasks = ref([])
-  const categories = ref(['General', 'Personal', 'Work'])
-  const loading = ref(false)
-
-  function addTask(task) {
-    tasks.value.push(task)
+export const useTaskStore = defineStore('tasks', {
+  state: () => ({
+    tasks: [],
+    loading: false
+  }),
+  actions: {
+    async fetchTasks() {
+      this.loading = true;
+      try {
+        const response = await apiService.getAllTasks();
+        this.tasks = response.data;
+      } catch (error) {
+        console.error("Error at loading the tasks!!", error);
+      } finally {
+        this.loading = false;
+      }
+    },
+    async addTask(taskData) {
+      try {
+        const response = await apiService.createTask(taskData);
+        this.tasks.push(response.data); 
+      } catch (error) {
+        throw error;
+      }
+    }
   }
-
-  function deleteTask(id) {
-    tasks.value = tasks.value.filter((t) => t.id !== id)
-  }
-
-  return { tasks, categories, loading, addTask, deleteTask }
-})
+});

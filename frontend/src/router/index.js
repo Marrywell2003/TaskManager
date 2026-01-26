@@ -3,6 +3,7 @@ import { auth } from '@/firebaseConfig'
 import { onAuthStateChanged } from 'firebase/auth' 
 import { useAuthStore } from '@/stores/authStore';
 import apiService from '@/services/apiService';
+import ManagerTasksView from '@/views/ManagerTasksView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -37,6 +38,21 @@ const router = createRouter({
       component: () => import('../views/RegisterView.vue'),
       meta: { hideSidebar: true } 
     },
+    {
+    path: '/manage-tasks', 
+    name: 'ManageTasks',
+    component: ManagerTasksView
+    },
+    {
+    path: '/reports',
+    name: 'Reports',
+    component: () => import('@/views/RaportsView.vue') 
+    },
+    {
+    path: '/settings',
+    name: 'Settings',
+    component: () => import('@/views/SettingsView.vue') 
+    }
   ],
 
   

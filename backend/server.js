@@ -11,7 +11,7 @@ const userRoutes=require('./src/routes/userRoutes');
 const statsRoutes = require('./src/routes/statsRoutes');
 const activityRoutes = require('./src/routes/activityRoutes');
 const { notFound, errorHandler } = require('./src/middleware/errorMiddleware');
-
+const taskRoutes = require('./src/routes/tasksRoutes');
 
 const app = express();
 
@@ -27,6 +27,7 @@ app.get('/api/status', (req, res) => {
 app.use('/api/users', userRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/activity', activityRoutes);
+app.use('/api/tasks', taskRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

@@ -1,28 +1,21 @@
 <template>
-  <span :class="['badge', type]">
-    <slot></slot> </span>
+  <span :class="['status-badge', status]">
+    {{ statusLabel }}
+  </span>
 </template>
 
 <script setup>
-defineProps({
-  type: {
-    type: String,
-    default: 'pending' // pending, urgent, done
-  }
-})
+import { computed } from 'vue';
+const props = defineProps(['status']);
+const statusLabel = computed(() => {
+  const labels = { 'todo': 'De făcut', 'in-progress': 'În lucru', 'done': 'Finalizat' };
+  return labels[props.status] || props.status;
+});
 </script>
 
 <style scoped>
-.badge {
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  display: inline-block;
-}
-
-.urgent { background-color: #fee2e2; color: #dc2626; }
-.pending { background-color: #fef3c7; color: #d97706; }
-.done { background-color: #dcfce7; color: #16a34a; }
+.status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+.todo { background: #cbd5e1; color: #475569; }
+.in-progress { background: #bfdbfe; color: #1e40af; }
+.done { background: #bbf7d0; color: #166534; }
 </style>

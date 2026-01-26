@@ -33,5 +33,17 @@ export default {
   },
   getUserProfile(uid) {
     return apiClient.get(`/users/profile/${uid}`);
-  }
+  },
+  createTask(taskData) {
+    return apiClient.post('/tasks/create', taskData);
+  },
+  getAllTasks() {
+    return apiClient.get('/tasks/all');
+  },
+  updateTaskStatus(taskId, newStatus) {
+    return apiClient.patch(`/tasks/${taskId}/status`, { status: newStatus });
+  },
+  getEmployees() {
+  return apiClient.get('/users/employees');
+}
 };
