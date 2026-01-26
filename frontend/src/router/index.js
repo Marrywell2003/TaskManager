@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { auth } from '@/firebaseConfig'
 import { onAuthStateChanged } from 'firebase/auth' 
+import { useAuthStore } from '@/stores/authStore';
+import apiService from '@/services/apiService';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -11,6 +13,18 @@ const router = createRouter({
       component: () => import('../views/HomeView.vue'),
       meta: { requiresAuth: true } 
     },
+  //   { 
+  //    path: '/dashboard-manager', 
+  //    name: 'manager-dash', 
+  //    component: () => import('../views/ManagerDashboard.vue'),
+  //    meta: { requiresAuth: true, role: 'Manager' } 
+  //   },
+  //  { 
+  //    path: '/dashboard-employee', 
+  //    name: 'employee-dash', 
+  //    component: () => import('../views/EmployeeDashboard.vue'),
+  //    meta: { requiresAuth: true, role: 'Employee' } 
+  //  },
     { 
       path: '/login', 
       name: 'login', 
@@ -42,26 +56,37 @@ const getCurrentUser = () => {
 };
 
 router.beforeEach(async(to, from, next) => {
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  const authStore = useAuthStore();
   const user = await getCurrentUser();
-
-  // onAuthStateChanged(auth, (user) => {
-  //   if (requiresAuth && !user) {
-  //     next({ name: 'login' });
-  //   } else if ((to.name === 'login' || to.name === 'register') && user) {
-  //     next({ name: 'home' });
-  //   } else {
-  //     next();
-  //   }
-  // });
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
 
   if (requiresAuth && !user) {
-    next({ name: 'login' });
-  } else if ((to.name === 'login' || to.name === 'register') && user) {
-    next({ name: 'home' });
-  } else {
-    next();
+    return next({ name: 'login' });
   }
+
+  if ((to.name === 'login' || to.name === 'register') && user) {
+    return next({ name: 'home' });
+  }
+
+  if (user && !authStore.userRole) {
+    try {
+      const response = await apiService.getUserProfile(user.uid);
+      authStore.saveUserSession(response.data);
+    } catch (error) {
+      console.error("Eroare la recuperarea profilului în router:", error);
+      return next({ name: 'login' });
+    }
+  }
+
+  const requiredRole = to.meta.role;
+  if (requiredRole && authStore.userRole !== requiredRole) {
+    alert("Acces restricționat! Nu ai permisiunile necesare.");
+    
+    const fallback = authStore.isManager ? '/dashboard-manager' : '/dashboard-employee';
+    return next(fallback);
+  }
+
+  next();
 });
 
 export default router

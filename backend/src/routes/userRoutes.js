@@ -3,10 +3,36 @@
 const express = require('express');
 const router = express.Router();
 const { db } = require('../config/firebaseAdmin'); 
+const verifyToken = require('../middleware/authMiddleware');
 
-router.get('/profile/:uid', async (req, res) => {
+router.post('/register', async (req, res) => {
+  try {
+    const { uid, firstName, lastName, email, role } = req.body;
+
+    await db.collection('users').doc(uid).set({
+      uid,
+      firstName,
+      lastName,
+      fullName: `${firstName} ${lastName}`,
+      email,
+      role,
+      createdAt: new Date().toISOString()
+    });
+
+    res.status(201).json({ message: "User profile created in database" });
+  } catch (error) {
+    console.error("Error saving user:", error);
+    res.status(500).json({ error: "Failed to save user profile" });
+  }
+});
+
+router.get('/profile/:uid',verifyToken, async (req, res) => {
   try {
     const uid = req.params.uid;
+
+    if (req.user.uid !== uid) {
+      return res.status(403).json({ error: 'Forbidden: Access denied' });
+    }
     
     const userDoc = await db.collection('users').doc(uid).get();
 
@@ -28,5 +54,7 @@ router.get('/profile/:uid', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+
 
 module.exports = router;

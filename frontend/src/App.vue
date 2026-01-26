@@ -1,19 +1,19 @@
 <template>
   <div class="app-layout">
     <aside v-if="!$route.meta.hideSidebar" class="sidebar">
-      <div class="logo">TaskMaster <span>Pro</span></div>
+      <div class="logo">TaskMaster</div>
       
       <nav class="nav-links">
         <router-link to="/">Dashboard</router-link>
 
-        <template v-if="userRole === 'Manager'">
+        <template v-if="authStore.isManager">
           <div class="menu-label">ADMINISTRARE</div>
           <router-link to="/manage-tasks"> Manage tasks </router-link>
           <router-link to="/team"> My team</router-link>
           <router-link to="/reports"> Raports </router-link>
         </template>
 
-        <template v-if="userRole === 'Employee'">
+        <template v-if="authStore.userRole === 'Employee'">
           <div class="menu-label">TASKS</div>
           <router-link to="/my-tasks">My tasks</router-link>
           <router-link to="/history">History</router-link>        
@@ -24,10 +24,12 @@
       </nav>
 
       <div class="user-control">
-        <p>Logged as: <strong>{{ userRole }}</strong></p>
-        <button @click="handleLogout" class="btn-logout">
+        <p>User: <strong>{{ authStore.userName }}</strong></p>
+        <p>Role: <small>{{ authStore.userRole }}</small></p>
+        
+        <AppButton variant="danger" @click="handleLogout">
           Logout
-        </button>
+        </AppButton>
       </div>
     </aside>
 
@@ -38,27 +40,35 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { onMounted } from 'vue';
 import { auth } from '@/firebaseConfig';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
+import apiService from '@/services/apiService';
+import AppButton from '@/components/AppButton.vue';
+import { useAuthStore } from '@/stores/authStore';
 
-const userRole = ref(null);//este rolul default
+//const userRole = ref(null);//este rolul default
 const router = useRouter();
+const authStore = useAuthStore();
 
 onMounted(() => {
   onAuthStateChanged(auth, async(user) => {
     if (user) {
       try {
-        const response = await axios.get(`http://localhost:5000/api/users/profile/${user.uid}`);
-        userRole.value = response.data.role; 
+        const token = await user.getIdToken();
+
+        const response = await apiService.getUserProfile(user.uid);
+        authStore.saveUserSession(response.data); 
       } catch (error) {
         console.error("Error fetching user role:", error);
-        userRole.value = 'user'; 
+        //userRole.value = 'user'; 
+        if (error.response?.status === 401) {
+          authStore.clearSession();
+        }
       }
     } else {
-      userRole.value = null;
+      authStore.clearSession();
     }
   });
 });
@@ -66,7 +76,7 @@ onMounted(() => {
 const handleLogout = async () => {
   try {
     await signOut(auth);
-    userRole.value = null;
+    authStore.clearSession();
     router.push('/login');
   } catch (error) {
     console.error("Logout error :", error);
@@ -118,23 +128,7 @@ body { font-family: sans-serif; background-color: #f4f7f6; color: #333; }
 }
 
 .user-control { border-top: 1px solid #34495e; padding-top: 20px; font-size: 0.8rem; }
-.btn-logout {
-  margin-top: 10px;
-  background: #e74c3c; /* Roșu */
-  color: white;
-  border: none;
-  padding: 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  width: 100%;
-  font-weight: bold;
-  transition: 0.3s;
-}
 
-.btn-logout:hover {
- 
-  background: #c0392b; 
-}
 
 .auth-layout {
   flex-grow: 1;

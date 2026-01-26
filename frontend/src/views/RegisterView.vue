@@ -4,46 +4,30 @@
       <h2>Create <span>Account</span></h2>
       <p class="subtitle">Join TaskMaster to manage your team</p>
       
-      <form @submit.prevent="handleRegister">
-        <div class="name-row">
-          <div class="input-group">
-            <label>First name</label>
-            <input v-model="firstName" type="text" placeholder="e.g. Maria" required />
-          </div>
-          <div class="input-group">
-            <label>Last name</label>
-            <input v-model="lastName" type="text" placeholder="e.g. Popescu" required />
-          </div>
-        </div>
+    <form @submit.prevent="handleRegister">
+      <div class="name-row">
+        <AppInput v-model="firstName" label="First name" placeholder="e.g. Maria" required />
+        <AppInput v-model="lastName" label="Last name" placeholder="e.g. Popescu" required />
+       </div>
 
-        <div class="input-group">
-          <label>Email address</label>
-          <input v-model="email" type="email" placeholder="maria@example.com" required />
-        </div>
-        
-        <div class="input-group">
-          <label>Select Role</label>
-          <select v-model="role" required class="role-select">
-            <option value="" disabled selected>Who are you?</option>
-            <option value="Manager">Manager (Team leader)</option>
-            <option value="Employee">Employee (Team member)</option>
-          </select>
-        </div>
-        
-        <div class="input-group">
-          <label>Password</label>
-          <input v-model="password" type="password" placeholder="Min. 6 characters" required />
-        </div>
+      <AppInput v-model="email" label="Email address" type="email" placeholder="maria@example.com" required />
 
-        <div class="input-group">
-          <label>Confirm password</label>
-          <input v-model="confirmPassword" type="password" placeholder="Repeat password" required />
-        </div>
-        
-        <button type="submit" :disabled="loading" class="btn-register">
-          {{ loading ? 'Creating Account...' : 'Create Account' }}
-        </button>
-      </form>
+      <div class="input-group">
+       <label>Select Role</label>
+       <select v-model="role" required class="role-select">
+         <option value="" disabled selected>Who are you?</option>
+         <option value="Manager">Manager (Team leader)</option>
+         <option value="Employee">Employee (Team member)</option>
+        </select>
+      </div>
+  
+      <AppInput v-model="password" label="Password" type="password" placeholder="Min. 6 characters" required />
+      <AppInput v-model="confirmPassword" label="Confirm password" type="password" placeholder="Repeat password" required />
+  
+       <AppButton type="submit" :loading="loading">
+        Create Account
+        </AppButton>
+    </form>
       
       <p class="footer-text">
         Already have an account? 
@@ -57,8 +41,12 @@
 import { ref } from 'vue';
 import { auth, db } from '@/firebaseConfig';
 import { createUserWithEmailAndPassword, signOut } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+//import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'vue-router';
+import AppButton from '@/components/AppButton.vue';
+import AppInput from '@/components/AppInput.vue';
+import apiService from '@/services/apiService';
+import { useAuthStore } from '@/stores/authStore';
 
 const firstName = ref('');
 const lastName = ref('');
@@ -68,6 +56,7 @@ const password = ref('');
 const confirmPassword = ref('');
 const loading = ref(false);
 const router = useRouter();
+const authStore = useAuthStore();
 
 const handleRegister = async () => {
   if (password.value !== confirmPassword.value) {
@@ -81,20 +70,19 @@ const handleRegister = async () => {
     const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
     const user = userCredential.user;
 
-    
-    await setDoc(doc(db, "users", user.uid), {
-      uid: user.uid, 
+
+    await apiService.registerUser({
+      uid: user.uid,
       firstName: firstName.value,
       lastName: lastName.value,
-      fullName: `${firstName.value} ${lastName.value}`,
       email: email.value,
-      role: role.value,
-      createdAt: new Date().toISOString()
+      role: role.value
     });
 
     alert("Account created! Please log in with your credentials.");
     
     await signOut(auth);
+    authStore.clearSession();
     router.push('/login');
 
   } catch (error) {
@@ -136,22 +124,7 @@ h2 span { color: #3498db; }
   gap: 15px;
 }
 
-.input-group {
-  text-align: left;
-  margin-bottom: 18px;
-  flex: 1;
-}
-
-label {
-  display: block;
-  font-size: 0.8rem;
-  font-weight: 700;
-  margin-bottom: 6px;
-  color: #2d3436;
-  text-transform: uppercase;
-}
-
-input, .role-select {
+.role-select {
   width: 100%;
   padding: 12px;
   border: 1.5px solid #dfe6e9;
@@ -160,26 +133,14 @@ input, .role-select {
   transition: border-color 0.3s;
 }
 
-input:focus, .role-select:focus {
+.role-select:focus {
   border-color: #3498db;
   outline: none;
 }
 
-.btn-register {
-  width: 100%;
-  padding: 14px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 10px;
+.name-row .app-input-group {
+  flex: 1;
 }
-
-.btn-register:hover { background-color: #2980b9; }
-.btn-register:disabled { background-color: #b2bec3; cursor: not-allowed; }
 
 .footer-text { margin-top: 25px; font-size: 0.9rem; color: #636e72; }
 .link { color: #3498db; text-decoration: none; font-weight: 700; }

@@ -5,34 +5,31 @@
       <p class="subtitle">Please sign in to manage your tasks</p>
       
       <form @submit.prevent="handleLogin">
-        <div class="input-group">
-          <label>Email Address</label>
-          <input 
-            v-model="email" 
-            type="email" 
-            placeholder="e.g. manager@company.com" 
-            required 
+        <AppInput 
+         v-model="email" 
+         label="Email Address" 
+         type="email" 
+          placeholder="e.g. manager@company.com" 
+          required 
           />
-        </div>
-        
-        <div class="input-group">
-          <label>Password</label>
-          <input 
-            v-model="password" 
-            type="password" 
-            placeholder="••••••••" 
-            required 
-          />
-        </div>
 
+         <AppInput 
+          v-model="password" 
+          label="Password" 
+          type="password" 
+          placeholder="••••••••" 
+          required 
+          />
         <div class="forgot-password">
           <a @click.prevent="handleForgotPassword" href="#">Forgot password?</a>
         </div>
         
-        <button type="submit" :disabled="loading" class="btn-login">
-          <span v-if="!loading">Sign In</span>
-          <span v-else>Authenticating...</span>
-        </button>
+        <AppButton 
+             type="submit" 
+             :loading="loading" 
+>
+                Sign In
+        </AppButton>
       </form>
       
       <p class="footer-text">
@@ -48,26 +45,35 @@ import { ref } from 'vue';
 import { auth } from '@/firebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
+import apiService from '@/services/apiService';
+import AppButton from '@/components/AppButton.vue';
+import AppInput from '@/components/AppInput.vue';
+import { useAuthStore } from '@/stores/authStore';
 
 const email = ref('');
 const password = ref('');
 const loading = ref(false);
 const router = useRouter();
+const isSubmitting = ref(false);
+const authStore = useAuthStore();
 
 const handleLogin = async () => {
+  isSubmitting.value = true;
   loading.value = true;
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
     const user = userCredential.user;
 
-    const response = await axios.get(`http://localhost:5000/api/users/profile/${user.uid}`);
+    const response = await apiService.getUserProfile(user.uid);
     const userData = response.data;
 
-    localStorage.setItem('userRole', userData.role);
-    localStorage.setItem('userName', userData.fullName);
+    authStore.saveUserSession({
+      uid: user.uid,
+      role: userData.role,
+      fullName: userData.fullName
+    });
 
-    if (userData.role === 'manager') {
+    if (authStore.isManager) {
       router.push('/dashboard-manager');
     } else {
       router.push('/dashboard-employee'); 
@@ -140,40 +146,8 @@ h2 span { color: #3498db; }
 
 .subtitle { color: #7f8c8d; margin-bottom: 30px; font-size: 0.95rem; }
 
-.input-group { text-align: left; margin-bottom: 22px; }
 
-label { 
-  display: block; 
-  font-size: 0.85rem; 
-  margin-bottom: 8px; 
-  color: #2c3e50; 
-  font-weight: 600; 
-}
 
-input {
-  width: 100%;
-  padding: 14px;
-  border: 1px solid #dfe6e9;
-  border-radius: 10px;
-  outline: none;
-  font-size: 1rem;
-  transition: border-color 0.3s;
-}
-
-input:focus { border-color: #3498db; }
-
-.btn-login {
-  width: 100%;
-  padding: 14px;
-  background: #3498db;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 1rem;
-  transition: transform 0.2s, background 0.3s;
-}
 
 .forgot-password {
   text-align: right;
@@ -197,9 +171,7 @@ input:focus { border-color: #3498db; }
   text-decoration: none;
 }
 
-.btn-login:hover { background: #2980b9; transform: translateY(-1px); }
-.btn-login:active { transform: translateY(0); }
-.btn-login:disabled { background: #bdc3c7; cursor: not-allowed; }
+
 
 .footer-text { margin-top: 25px; font-size: 0.9rem; color: #7f8c8d; }
 .link { color: #3498db; text-decoration: none; font-weight: bold; }
