@@ -51,5 +51,9 @@ export default {
   },
   updateTask(taskId, taskData) {
   return apiClient.put(`/tasks/${taskId}`, taskData);
-  }
+  },
+  deleteTask(taskId) {
+    return apiClient.delete(`/tasks/${taskId}`);
+  },
+
 };

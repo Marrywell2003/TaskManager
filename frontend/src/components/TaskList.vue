@@ -33,8 +33,15 @@
       class="custom-context-menu" 
       :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }"
     >
-      <div class="menu-item" @click="emitEdit">
-        <span>✏️</span> Edit task
+      <div v-if="authStore.isManager" 
+        class="menu-item" 
+        @click="emitEdit">
+        Edit task
+      </div>
+      <div v-if="authStore.isManager" 
+       @click.stop="handleDelete(contextMenu.task)" 
+        class="menu-item delete-option">
+        Delete task
       </div>
     </div>
 
@@ -44,8 +51,14 @@
 <script setup>
 import TaskItem from './TaskItem.vue';
 import { reactive, onMounted, onUnmounted } from 'vue';
+import { useTaskStore } from '@/stores/taskStore'; 
+import { useAuthStore } from '@/stores/authStore';
 
 const emit = defineEmits(['edit-task']);
+const taskStore = useTaskStore(); 
+const authStore = useAuthStore();
+
+
 
 defineProps({
   tasks: {
@@ -76,6 +89,21 @@ const handleOpenMenu = ({ event, task }) => {
 const emitEdit = () => {
   emit('edit-task', contextMenu.task);
   contextMenu.visible = false;
+};
+
+const handleDelete = async (task) => {
+  if (!task) return;
+  console.log("ID Task pentru ștergere:", task.id);
+  const confirmed = window.confirm('Are you sure ?');
+  if (confirmed) {
+    try {
+      await taskStore.deleteTask(task.id);
+      contextMenu.visible = false;
+    } catch (err) {
+      alert("Error - delete task!");
+      console.error(err);
+    }
+  }
 };
 
 const closeMenu = () => { contextMenu.visible = false; };
@@ -164,6 +192,16 @@ onUnmounted(() => window.removeEventListener('click', closeMenu));
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   min-width: 160px;
   padding: 6px 0;
+}
+
+.delete-option {
+  color: #ef4444; /* Roșu */
+  border-top: 1px solid #f1f5f9;
+  font-weight: 500;
+}
+
+.delete-option:hover {
+  background: #fef2f2 !important; /* Fundal roșiatic la hover */
 }
 
 .menu-item {

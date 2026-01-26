@@ -124,5 +124,26 @@ router.put('/:id', verifyToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to update task' });
   }
 });
+//delete
+router.delete('/:id', verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userDoc = await db.collection('users').doc(req.user.uid).get();
+    if (!userDoc.exists || userDoc.data().role !== 'Manager') {
+      return res.status(403).json({ error: 'Access denied. Only managers can delete tasks!' });
+    }
+    const taskRef = db.collection('tasks').doc(id);
+    const taskDoc = await taskRef.get();
+
+    if (!taskDoc.exists) {
+      return res.status(404).json({ error: 'Task not found!' });
+    }
+    await taskRef.delete();
+    res.json({ message: 'Task deleted successfully' });
+  } catch (error) {
+    console.error("Error deleting task:", error);
+    res.status(500).json({ error: 'Failed to delete task' });
+  }
+});
 
 module.exports = router;
