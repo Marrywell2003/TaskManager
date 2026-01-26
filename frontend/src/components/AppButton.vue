@@ -1,8 +1,9 @@
 <template>
-  <button 
-    :class="['custom-button', variant]" 
+  <button
+    v-bind="$attrs"
+    :class="['custom-button', variant]"
     :disabled="loading || disabled"
-    @click="$emit('click')"
+    @click="emit('click', $event)"
   >
     <span v-if="loading" class="spinner"></span>
     <slot v-else></slot>
@@ -10,10 +11,12 @@
 </template>
 
 <script setup>
+const emit = defineEmits(['click'])
+
 defineProps({
   variant: {
     type: String,
-    default: 'primary' // poate fi: primary, secondary, danger, success
+    default: 'primary' 
   },
   loading: {
     type: Boolean,
@@ -23,7 +26,11 @@ defineProps({
     type: Boolean,
     default: false
   }
-});
+})
+
+const onClick = (e) => {
+  emit('click', e)
+}
 </script>
 
 <style scoped>
@@ -34,11 +41,11 @@ defineProps({
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  display: flex;
+  display: inline-flex;        
   align-items: center;
   justify-content: center;
   gap: 8px;
-  width: 100%; /* Opțional, îl poți face auto pe desktop */
+  width: auto;
 }
 
 .primary { background-color: #3498db; color: white; }

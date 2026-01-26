@@ -9,7 +9,7 @@ export const taskService = {
       const docRef = await addDoc(tasksCollection, taskData);
       return docRef.id;
     } catch (error) {
-      console.error("Eroare la adăugarea task-ului: ", error);
+      console.error("Error - add task: ", error);
       throw error;
     }
   },
@@ -19,7 +19,7 @@ export const taskService = {
       const snapshot = await getDocs(tasksCollection);
       return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     } catch (error) {
-      console.error("Eroare la preluarea task-urilor: ", error);
+      console.error("Error- get task: ", error);
       throw error;
     }
   }

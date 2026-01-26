@@ -1,22 +1,22 @@
 <template>
   <div class="task-table-container">
     <div class="table-header">
-      <div class="col-title">Sarcina</div>
-      <div class="col-desc">Descriere</div>
-      <div class="col-emp">Responsabil</div>
-      <div class="col-mgr">Delegat de</div>
-      <div class="col-prio">Prioritate</div>
-      <div class="col-date">Termen</div>
+      <div class="col-title">Task</div>
+      <div class="col-desc">Description</div>
+      <div class="col-emp">Assigned to</div>
+      <div class="col-mgr">Assigned by</div>
+      <div class="col-prio">Priority</div>
+      <div class="col-date">Deadline</div>
       <div class="col-status">Status</div>
     </div>
 
     <div v-if="loading" class="state-msg loading">
       <div class="spinner"></div>
-      <span>Se încarcă sarcinile...</span>
+      <span>Loading...</span>
     </div>
 
     <div v-else-if="tasks.length === 0" class="state-msg empty">
-      <p>Nu există nicio sarcină înregistrată.</p>
+      <p>No tasks</p>
     </div>
 
     <div v-else class="table-body">

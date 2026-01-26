@@ -4,7 +4,7 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     userRole: localStorage.getItem('userRole') || null,
     userName: localStorage.getItem('userName') || null,
-    uid: null
+    uid: localStorage.getItem('uid') || null
   }),
   
   getters: {
@@ -20,14 +20,16 @@ export const useAuthStore = defineStore('auth', {
 
       localStorage.setItem('userRole', userData.role);
       localStorage.setItem('userName', userData.fullName);
+      localStorage.setItem('uid', userData.uid); 
     },
 
     clearSession() {
       this.userRole = null;
       this.userName = null;
       this.uid = null;
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('userName');
+      //localStorage.removeItem('userRole');
+      //localStorage.removeItem('userName');
+      localStorage.clear();
     }
   }
 });

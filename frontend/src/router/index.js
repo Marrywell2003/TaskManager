@@ -52,6 +52,18 @@ const router = createRouter({
     path: '/settings',
     name: 'Settings',
     component: () => import('@/views/SettingsView.vue') 
+    },
+    {
+    path: '/history',
+    name: 'History',
+    component: () => import('@/views/HistoryTasksView.vue'),
+    //meta: { requiresAuth: true, role: 'Employee' }
+    },
+    {
+    path: '/my-tasks', 
+    name: 'MyTasks',
+    component: () => import('@/views/EmployeeTasksView.vue'), 
+    //meta: { requiresAuth: true, role: 'Employee' } 
     }
   ],
 
@@ -89,18 +101,18 @@ router.beforeEach(async(to, from, next) => {
       const response = await apiService.getUserProfile(user.uid);
       authStore.saveUserSession(response.data);
     } catch (error) {
-      console.error("Eroare la recuperarea profilului în router:", error);
+      console.error("Error at retrieving profile:", error);
       return next({ name: 'login' });
     }
   }
 
-  const requiredRole = to.meta.role;
-  if (requiredRole && authStore.userRole !== requiredRole) {
-    alert("Acces restricționat! Nu ai permisiunile necesare.");
+  // const requiredRole = to.meta.role;
+  // if (requiredRole && authStore.userRole) {
+  //   alert("Access restricted !");
     
-    const fallback = authStore.isManager ? '/dashboard-manager' : '/dashboard-employee';
-    return next(fallback);
-  }
+  //   const fallback = authStore.isManager ? '/manage-tasks' : '/my-tasks';
+  //   return next(fallback);
+  // }
 
   next();
 });

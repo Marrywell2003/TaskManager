@@ -66,7 +66,7 @@ router.get('/employees', verifyToken, async (req, res) => {
 
     res.json(employees);
   } catch (error) {
-    res.status(500).json({ error: "Eroare la preluarea listei de angajați" });
+    res.status(500).json({ error: "Error - loading the list of employees" });
   }
 });
 

@@ -20,9 +20,9 @@
           placeholder="••••••••" 
           required 
           />
-        <div class="forgot-password">
+        <!-- <div class="forgot-password">
           <a @click.prevent="handleForgotPassword" href="#">Forgot password?</a>
-        </div>
+        </div> -->
         
         <AppButton 
              type="submit" 
@@ -73,11 +73,12 @@ const handleLogin = async () => {
       fullName: userData.fullName
     });
 
-    if (authStore.isManager) {
-      router.push('/dashboard-manager');
-    } else {
-      router.push('/dashboard-employee'); 
-    }
+    // if (authStore.isManager) {
+    //   router.push('home');
+    // } else {
+    //   router.push('home'); 
+    // }
+    router.push('home');
   } catch(error){
     console.error("Authentication error:", error);
     let errorMessage = "An unexpected error occurred";
@@ -107,18 +108,18 @@ const handleLogin = async () => {
   }
 };
 
-const handleForgotPassword = async () => {
-  if (!email.value) {
-    alert("Please enter your email address first to reset your password");
-    return;
-  }
-  try {
-    await sendPasswordResetEmail(auth, email.value);
-    alert("Password reset email sent! Check your inbox");
-  } catch (error) {
-    alert("Error: " + error.message);
-  }
-};
+// const handleForgotPassword = async () => {
+//   if (!email.value) {
+//     alert("Please enter your email address first to reset your password");
+//     return;
+//   }
+//   try {
+//     await sendPasswordResetEmail(auth, email.value);
+//     alert("Password reset email sent! Check your inbox");
+//   } catch (error) {
+//     alert("Error: " + error.message);
+//   }
+// };
 
 </script>
 
@@ -149,7 +150,7 @@ h2 span { color: #3498db; }
 
 
 
-.forgot-password {
+/* .forgot-password {
   text-align: right;
   margin-bottom: 20px;
   margin-top: -10px;
@@ -163,15 +164,13 @@ h2 span { color: #3498db; }
 
 .forgot-password a:hover {
   text-decoration: underline;
-}
+} */
 
 .link {
   color: #3498db;
   font-weight: bold;
   text-decoration: none;
 }
-
-
 
 .footer-text { margin-top: 25px; font-size: 0.9rem; color: #7f8c8d; }
 .link { color: #3498db; text-decoration: none; font-weight: bold; }

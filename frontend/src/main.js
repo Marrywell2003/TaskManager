@@ -14,7 +14,7 @@ app.use(pinia)
 app.use(router)
 
 const authStore = useAuthStore(pinia);
-// // deconectare fortata si curatare date
+// 
 // signOut(auth).then(() => {
 //   authStore.clearSession(); // ACUM folosim store-ul ,in loc de localStorage direct
 //   console.log("App started: Session cleared via Pinia Store");

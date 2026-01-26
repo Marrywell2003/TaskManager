@@ -45,5 +45,8 @@ export default {
   },
   getEmployees() {
   return apiClient.get('/users/employees');
-}
+  },
+  getTasksByRole(userId, role) {
+    return apiClient.get(`/tasks/${role}/${userId}`);
+  }
 };

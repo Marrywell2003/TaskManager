@@ -1,12 +1,12 @@
 <template>
   <div class="dashboard">
-    <h2>Tablou de bord</h2>
+    <h2>Dashboard</h2>
   
     <div class="stats-grid">
       <StatCard label="Total users:" :value="stats.totalUsers" />
-      <StatCard label="Total Task-uri" :value="stats.totalTasks" />
-      <StatCard label="Finalizate" :value="stats.completedTasks" />
-      <StatCard label="Rata de succes" :value="stats.efficiencyRate" />
+      <StatCard label="Total tasks" :value="stats.totalTasks" />
+      <StatCard label="Finished" :value="stats.completedTasks" />
+      <StatCard label="Rata of eficiency" :value="stats.efficiencyRate" />
     </div>
 
     <div class="activity-section">
@@ -25,7 +25,7 @@
     </div>
 
     <div class="status-badge" :class="{ online: isOnline }">
-      Server Backend: {{ isOnline ? 'Conectat' : 'Deconectat' }}
+      Server backend: {{ isOnline ? 'Conectat' : 'Deconectat' }}
     </div>
   </div>
 </template>
@@ -52,7 +52,7 @@ onMounted(async () => {
     isOnline.value = statusRes.data.status === 'Online';
     activities.value = activityRes.data; 
   } catch (error) {
-    console.error("Eroare la conectarea cu backend-ul:", error);
+    console.error("Error - Connecting to backend:", error);
   }
 });
 </script>

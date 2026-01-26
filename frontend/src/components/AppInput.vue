@@ -1,7 +1,8 @@
 <template>
   <div class="app-input-group">
     <label v-if="label">{{ label }}</label>
-    <input 
+    <input
+      v-bind="$attrs" 
       :type="type" 
       :placeholder="placeholder" 
       :value="modelValue"
@@ -13,6 +14,8 @@
 </template>
 
 <script setup>
+defineOptions({ inheritAttrs: false })
+
 defineProps({
   label: String,
   type: { type: String, default: 'text' },

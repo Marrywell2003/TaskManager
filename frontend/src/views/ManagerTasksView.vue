@@ -1,9 +1,9 @@
 <template>
   <div class="manager-tasks-page">
     <div class="header-actions">
-      <h1>Gestionare Sarcini</h1>
+      <h1>Manage tasks</h1>
       <AppButton @click="showForm = !showForm" variant="primary">
-        {{ showForm ? '✖ Închide Formular' : '+ Adaugă Task Nou' }}
+        {{ showForm ? '✖ Close form' : '+ Add new task' }}
       </AppButton>
     </div>
 
@@ -15,7 +15,7 @@
 
     <div class="list-section">
       <div class="filters-bar">
-        <h3>Lista Sarcinilor</h3>
+        <h3>List of tasks</h3>
         </div>
       
       <TaskList :tasks="taskStore.tasks" :loading="taskStore.loading" />
@@ -26,15 +26,21 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useTaskStore } from '@/stores/taskStore';
+import { useAuthStore } from '@/stores/authStore';
 import TaskForm from '@/components/TaskForm.vue';
 import TaskList from '@/components/TaskList.vue';
 import AppButton from '@/components/AppButton.vue';
 
 const taskStore = useTaskStore();
-const showForm = ref(false); // Implicit, formularul este ascuns
+const showForm = ref(false); 
+const authStore=useAuthStore();
 
 onMounted(() => {
-  taskStore.fetchTasks();
+  if (authStore.uid) {
+    taskStore.fetchUserTasks(authStore.uid, 'manager');
+  } else {
+    console.error("Manager not logged");
+  }
 });
 </script>
 
@@ -52,7 +58,6 @@ onMounted(() => {
   padding-bottom: 30px;
 }
 
-/* Animație pentru deschidere lină */
 .slide-enter-active, .slide-leave-active { transition: all 0.3s ease; }
 .slide-enter-from, .slide-leave-to { opacity: 0; transform: translateY(-20px); }
 </style>
