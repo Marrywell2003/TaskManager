@@ -51,19 +51,27 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed,reactive,watch } from 'vue';
 import { useTaskStore } from '@/stores/taskStore';
 import apiService from '@/services/apiService';
 import AppInput from '@/components/AppInput.vue';
 import AppButton from '@/components/AppButton.vue';
 import { useAuthStore } from '@/stores/authStore';
 
-
-const emit = defineEmits(['task-created']);
+const props = defineProps({
+  taskToEdit: {
+    type: Object,
+    default: null
+  }
+});
+const emit = defineEmits(['task-created', 'task-updated', 'cancel']);
 const authStore=useAuthStore();
 const taskStore = useTaskStore();
 const employees = ref([]);
 const loading = ref(false);
+
+
+
 
 const errors = ref({
   dueDate: ''
@@ -77,6 +85,36 @@ const form = ref({
   priority: 'medium',
   dueDate: ''
 });
+
+const resetForm = () => {
+  form.value = {
+    title: '',
+    description: '',
+    assignedTo: '',
+    assignedToName: '',
+    priority: 'medium',
+    dueDate: ''
+  };
+};
+
+watch(() => props.taskToEdit, (newTask) => {
+  if (newTask) {
+    form.value.title = newTask.title;
+    form.value.description = newTask.description;
+    form.value.priority = newTask.priority;
+    form.value.assignedTo = newTask.assignedTo;
+    form.value.assignedToName = newTask.assignedToName || '';
+    if (newTask.dueDate) {
+      const seconds = newTask.dueDate.seconds || newTask.dueDate._seconds;
+      const d = seconds ? new Date(seconds * 1000) : new Date(newTask.dueDate);
+     if (!isNaN(d.getTime())) {
+        form.value.dueDate = d.toISOString().split('T')[0];
+      }
+    }
+  } else {
+    resetForm();
+  }
+}, { immediate: true });
 
 const today = computed(() => {
   const d = new Date();
@@ -129,36 +167,43 @@ const validate = () => {
 const handleSubmit = async () => {
   if (!validate()) return;
 
+  updateEmployeeName();
+
   loading.value = true;
   try {
-    const finalTaskData = {
-      ...form.value,
-      createdBy: authStore.uid, 
-      status: 'todo',           
-      createdAt: new Date().toISOString()
-    };
+    if (props.taskToEdit) {
+      const updatedData = {
+        ...form.value,
+      };
+    
+    await taskStore.updateTask(props.taskToEdit.id, updatedData);
+      alert("Task updated successfully!");
+    }else{
+       const finalTaskData = {
+          ...form.value,
+          createdBy: authStore.uid, 
+          status: 'todo',           
+          createdAt: new Date().toISOString()
+        };
 
-    //await taskStore.addTask({ ...form.value });
-    await taskStore.addTask(finalTaskData);
+       //await taskStore.addTask({ ...form.value });
+       await taskStore.addTask(finalTaskData);
+       alert("Task created successfully");
 
-    form.value = {
-      title: '',
-      description: '',
-      assignedTo: '',
-      assignedToName: '',
-      priority: 'medium',
-      dueDate: ''
-    };
+      }
 
-    emit('task-created'); 
-    alert("Task created successfully");
+     resetForm();
+     emit('task-created'); 
+
   } catch (err) {
     console.error(err);
-    alert("Error - create task");
+    alert(props.taskToEdit ? "Error - update task" : "Error - create task");
   } finally {
     loading.value = false;
   }
 };
+
+
 </script>
 
 <style scoped>

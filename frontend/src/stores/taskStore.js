@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia';
 import apiService from '@/services/apiService';
+// import { db } from '@/firebase/config'; 
+// import { doc, updateDoc } from 'firebase/firestore';
 
 export const useTaskStore = defineStore('tasks', {
   state: () => ({
@@ -38,6 +40,21 @@ export const useTaskStore = defineStore('tasks', {
       } catch (error) {
         throw error;
       }
+    },
+
+    async updateTask(taskId, updatedData) {
+     try {
+        await apiService.updateTask(taskId, updatedData);
+        const index = this.tasks.findIndex(t => t.id === taskId);
+        if (index !== -1) {
+         this.tasks[index] = { ...this.tasks[index], ...updatedData };
+        }
+      } catch (error) {
+        console.error("Error updating task in store:", error);
+        throw error;
+      }
     }
+
+
   }
 });

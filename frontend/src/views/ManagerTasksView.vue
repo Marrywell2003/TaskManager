@@ -9,7 +9,10 @@
 
     <transition name="slide">
       <div v-if="showForm" class="form-wrapper">
-        <TaskForm @task-created="showForm = false" />
+        <TaskForm 
+        :task-to-edit="selectedTask"
+        @task-created="handleSuccess"
+        @cancel="closeForm" />
       </div>
     </transition>
 
@@ -18,7 +21,10 @@
         <h3>List of tasks</h3>
         </div>
       
-      <TaskList :tasks="taskStore.tasks" :loading="taskStore.loading" />
+      <TaskList 
+      :tasks="taskStore.tasks" 
+      :loading="taskStore.loading"
+      @edit-task="handleEdit" />
     </div>
   </div>
 </template>
@@ -34,6 +40,28 @@ import AppButton from '@/components/AppButton.vue';
 const taskStore = useTaskStore();
 const showForm = ref(false); 
 const authStore=useAuthStore();
+const selectedTask = ref(null);
+
+const toggleCreate = () => {
+  selectedTask.value = null; 
+  showForm.value = !showForm.value;
+};
+
+const handleEdit = (task) => {
+  selectedTask.value = task; 
+  showForm.value = true;     
+  window.scrollTo({ top: 0, behavior: 'smooth' }); 
+};
+
+const handleSuccess = () => {
+  showForm.value = false;
+  selectedTask.value = null;
+};
+
+const closeForm = () => {
+  showForm.value = false;
+  selectedTask.value = null;
+};
 
 onMounted(() => {
   if (authStore.uid) {

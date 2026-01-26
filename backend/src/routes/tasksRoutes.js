@@ -103,5 +103,26 @@ router.get('/employee/:employeeId', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+//update task
+router.put('/:id', verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    if (updateData.dueDate) {
+      updateData.dueDate = admin.firestore.Timestamp.fromDate(new Date(updateData.dueDate));
+    }
+
+    await db.collection('tasks').doc(id).update({
+      ...updateData,
+      updatedAt: admin.firestore.Timestamp.now()
+    });
+
+    res.json({ message: 'Task updated successfully' });
+  } catch (error) {
+    console.error("Error updating task:", error);
+    res.status(500).json({ error: 'Failed to update task' });
+  }
+});
 
 module.exports = router;

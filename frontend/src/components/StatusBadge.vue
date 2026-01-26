@@ -8,7 +8,7 @@
 import { computed } from 'vue';
 const props = defineProps(['status']);
 const statusLabel = computed(() => {
-  const labels = { 'todo': 'De făcut', 'in-progress': 'În lucru', 'done': 'Finalizat' };
+  const labels = { 'todo': 'To do', 'in-progress': 'In progress', 'done': 'Done' };
   return labels[props.status] || props.status;
 });
 </script>

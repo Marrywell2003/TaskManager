@@ -24,13 +24,28 @@
         v-for="task in tasks" 
         :key="task.id" 
         :task="task" 
+        @open-menu="handleOpenMenu"
       />
     </div>
+
+    <div 
+      v-if="contextMenu.visible" 
+      class="custom-context-menu" 
+      :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }"
+    >
+      <div class="menu-item" @click="emitEdit">
+        <span>✏️</span> Edit task
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script setup>
 import TaskItem from './TaskItem.vue';
+import { reactive, onMounted, onUnmounted } from 'vue';
+
+const emit = defineEmits(['edit-task']);
 
 defineProps({
   tasks: {
@@ -43,6 +58,30 @@ defineProps({
     default: false
   }
 });
+
+const contextMenu = reactive({
+  visible: false,
+  x: 0,
+  y: 0,
+  task: null
+});
+
+const handleOpenMenu = ({ event, task }) => {
+  contextMenu.x = event.clientX;
+  contextMenu.y = event.clientY;
+  contextMenu.task = task;
+  contextMenu.visible = true;
+};
+
+const emitEdit = () => {
+  emit('edit-task', contextMenu.task);
+  contextMenu.visible = false;
+};
+
+const closeMenu = () => { contextMenu.visible = false; };
+
+onMounted(() => window.addEventListener('click', closeMenu));
+onUnmounted(() => window.removeEventListener('click', closeMenu));
 </script>
 
 <style scoped>
@@ -114,5 +153,31 @@ defineProps({
 .task-table-container::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 10px;
+}
+
+.custom-context-menu {
+  position: fixed;
+  z-index: 10000;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  min-width: 160px;
+  padding: 6px 0;
+}
+
+.menu-item {
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #1e293b;
+  transition: background 0.2s;
+}
+
+.menu-item:hover {
+  background: #f1f5f9;
 }
 </style>

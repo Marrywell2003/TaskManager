@@ -48,5 +48,8 @@ export default {
   },
   getTasksByRole(userId, role) {
     return apiClient.get(`/tasks/${role}/${userId}`);
+  },
+  updateTask(taskId, taskData) {
+  return apiClient.put(`/tasks/${taskId}`, taskData);
   }
 };
