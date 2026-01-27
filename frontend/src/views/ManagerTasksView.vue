@@ -2,7 +2,7 @@
   <div class="manager-tasks-page">
     <div class="header-actions">
       <h1>Manage tasks</h1>
-      <AppButton @click="showForm = !showForm" variant="primary">
+      <AppButton @click="toggleCreate" variant="primary">
         {{ showForm ? '✖ Close form' : '+ Add new task' }}
       </AppButton>
     </div>
@@ -12,6 +12,7 @@
         <TaskForm 
         :task-to-edit="selectedTask"
         @task-created="handleSuccess"
+        @task-updated="handleSuccess"
         @cancel="closeForm" />
       </div>
     </transition>
@@ -48,7 +49,7 @@ const toggleCreate = () => {
 };
 
 const handleEdit = (task) => {
-  selectedTask.value = task; 
+  selectedTask.value = { ...task }; 
   showForm.value = true;     
   window.scrollTo({ top: 0, behavior: 'smooth' }); 
 };

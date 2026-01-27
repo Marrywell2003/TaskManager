@@ -7,11 +7,11 @@
     </div>
     
     <div class="col-emp">
-       <span class="user-tag">{{ task.assignedToName || 'Neasignat' }}</span>
+       <span class="user-tag">{{ task.assignment?.userName|| 'Unsignated' }}</span>
     </div>
     
     <div class="col-mgr">
-      <span class="manager-text">{{ task.createdByName || 'Admin' }}</span>
+      <span class="manager-text">{{ task.author?.name || 'Admin' }}</span>
     </div>
     
     <div class="col-prio">
@@ -21,7 +21,7 @@
     </div>
     
     <div class="col-date">
-      {{ formatDate(task.dueDate) }}
+      {{ formatDate(task.metadata?.dueDate) }}
     </div>
     
     <div class="col-status">
@@ -60,13 +60,9 @@ const props = defineProps({
 });
 
 const canChangeStatus = computed(() => {
-  const isCorrectEmployee = authStore.uid === props.task.assignedTo;
+  const isCorrectEmployee = authStore.uid === props.task.assignment?.userId;
   const isEmployeeRole = authStore.userRole?.toLowerCase() === 'employee';
   return isCorrectEmployee && isEmployeeRole;});
-
-// console.log("Task:", props.task.title, "Asignat la:", props.task.assignedTo);
-// console.log("Eu sunt:", authStore.uid, "Rol:", authStore.role);
-// console.log("Pot schimba?", canChangeStatus.value);
 
 const handleStatusChange = async (event) => {
   const newStatus = event.target.value;
@@ -84,7 +80,6 @@ const onRightClick = (event) => {
 };
 
 const formatDate = (ts) => {
-      //verif de ce imi da invalid date
   if (!ts) return '—';
   try {
     let date;

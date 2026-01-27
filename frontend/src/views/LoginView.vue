@@ -78,7 +78,7 @@ const handleLogin = async () => {
     // } else {
     //   router.push('home'); 
     // }
-    router.push('home');
+    router.push({ name: 'home' });
   } catch(error){
     console.error("Authentication error:", error);
     let errorMessage = "An unexpected error occurred";

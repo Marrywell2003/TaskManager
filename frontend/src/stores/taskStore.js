@@ -1,7 +1,5 @@
 import { defineStore } from 'pinia';
 import apiService from '@/services/apiService';
-// import { db } from '@/firebase/config'; 
-// import { doc, updateDoc } from 'firebase/firestore';
 
 export const useTaskStore = defineStore('tasks', {
   state: () => ({
@@ -9,17 +7,6 @@ export const useTaskStore = defineStore('tasks', {
     loading: false
   }),
   actions: {
-    // async fetchUserTasks() {
-    //   this.loading = true;
-    //   try {
-    //     const response = await apiService.getAllTasks();
-    //     this.tasks = response.data;
-    //   } catch (error) {
-    //     console.error("Error at loading the tasks!!", error);
-    //   } finally {
-    //     this.loading = false;
-    //   }
-    // },
     async fetchUserTasks(userId, role) {
      this.loading = true;
      try {
@@ -44,10 +31,18 @@ export const useTaskStore = defineStore('tasks', {
 
     async updateTask(taskId, updatedData) {
      try {
-        await apiService.updateTask(taskId, updatedData);
+        const response = await apiService.updateTask(taskId, updatedData);
         const index = this.tasks.findIndex(t => t.id === taskId);
         if (index !== -1) {
-         this.tasks[index] = { ...this.tasks[index], ...updatedData };
+         //this.tasks[index] = { ...this.tasks[index], ...updatedData };
+         if (response.data && response.data.id) {
+            this.tasks[index] = response.data;
+          } else {
+            this.tasks[index] = { 
+              ...this.tasks[index], 
+              ...updatedData,
+            };
+          }
         }
       } catch (error) {
         console.error("Error updating task in store:", error);

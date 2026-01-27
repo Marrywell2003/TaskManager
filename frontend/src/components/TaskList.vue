@@ -58,8 +58,6 @@ const emit = defineEmits(['edit-task']);
 const taskStore = useTaskStore(); 
 const authStore = useAuthStore();
 
-
-
 defineProps({
   tasks: {
     type: Array,
@@ -93,7 +91,6 @@ const emitEdit = () => {
 
 const handleDelete = async (task) => {
   if (!task) return;
-  console.log("ID Task pentru ștergere:", task.id);
   const confirmed = window.confirm('Are you sure ?');
   if (confirmed) {
     try {

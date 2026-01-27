@@ -9,8 +9,7 @@
         <template v-if="authStore.isManager">
           <div class="menu-label">ADMINISTRARE</div>
           <router-link to="/manage-tasks"> Manage tasks </router-link>
-          <!-- <router-link to="/team"> My team</router-link> -->
-          <router-link to="/reports"> Raports </router-link>
+          <!-- <router-link to="/reports"> Raports </router-link> -->
         </template>
 
         <template v-if="authStore.userRole === 'Employee'">
@@ -19,8 +18,6 @@
           <router-link to="/history">History</router-link>        
         </template>
 
-        <div class="menu-label">SISTEM</div>
-        <router-link to="/settings">Settings</router-link>
       </nav>
 
       <div class="user-control">
@@ -48,7 +45,6 @@ import apiService from '@/services/apiService';
 import AppButton from '@/components/AppButton.vue';
 import { useAuthStore } from '@/stores/authStore';
 
-//const userRole = ref(null);//este rolul default
 const router = useRouter();
 const authStore = useAuthStore();
 
@@ -56,13 +52,12 @@ onMounted(() => {
   onAuthStateChanged(auth, async(user) => {
     if (user) {
       try {
-        const token = await user.getIdToken();
+        //const token = await user.getIdToken();
 
         const response = await apiService.getUserProfile(user.uid);
         authStore.saveUserSession(response.data); 
       } catch (error) {
         console.error("Error fetching user role:", error);
-        //userRole.value = 'user'; 
         if (error.response?.status === 401) {
           authStore.clearSession();
         }

@@ -1,16 +1,30 @@
-//istoric task uri
+
 
 const express = require('express');
 const router = express.Router();
+const { db } = require('../config/firebaseAdmin');
 
-router.get('/', (req, res) => {
-    //de actualizat aici
-    const activities = [
-        { id: 1, user: 'Manager', action: 'Approved Task #102', time: '10 min ago' },
-        { id: 2, user: 'User1', action: 'Completed "API Docs"', time: '2h ago' },
-        { id: 3, user: 'User2', action: 'Added a new task', time: '5h ago' }
-    ];
-    res.json(activities);
+router.get('/', async (req, res) => {
+    try {
+        const snapshot = await db.collection('tasks')
+            .orderBy('updatedAt', 'desc') 
+            .limit(5)
+            .get();
+        const activities = snapshot.docs.map(doc => {
+            const data = doc.data();
+            const lastTime = data.updatedAt ? data.updatedAt.toDate() : new Date();
+            return {
+                id: doc.id,
+                user: data.assignedToName || 'System',
+                action: `Updated status to "${data.status}" for: ${data.title}`,
+                time: lastTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+        });
+        res.json(activities);
+    } catch (error) {
+        console.error("Error fetching activities:", error);
+        res.status(500).json({ error: "Could not fetch recent activity" });
+    }
 });
 
 module.exports = router;

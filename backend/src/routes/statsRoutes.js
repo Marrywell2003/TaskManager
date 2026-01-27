@@ -6,14 +6,26 @@ const { db } = require('../config/firebaseAdmin');
 
 router.get('/summary', async (req, res) => {
     try {
-    const snapshot = await db.collection('users').get();
-    const userCount = snapshot.size;
+    const [usersSnapshot, tasksSnapshot] = await Promise.all([
+      db.collection('users').get(),
+      db.collection('tasks').get()
+    ]);
+    const totalUsers = usersSnapshot.size;
+    const totalTasks = tasksSnapshot.size;
+    
+    const completedTasks = tasksSnapshot.docs.filter(doc => 
+      doc.data().status?.toLowerCase() === 'done'
+    ).length;
+
+    const efficiency = totalTasks > 0 
+      ? Math.round((completedTasks / totalTasks) * 100) 
+      : 0;
 
     res.json({
-      totalUsers:userCount,
-      totalTasks: 0, //nu am tasks inca
-      completedTasks: Math.floor(userCount / 2),
-      efficiencyRate: 0,//userCount > 0 ? '75%' : '0%',
+      totalUsers:totalUsers,
+      totalTasks: totalTasks,
+      completedTasks: completedTasks,
+      efficiencyRate:`${efficiency}%`,
       lastUpdated: new Date().toLocaleTimeString()
     });
   } catch (error) {

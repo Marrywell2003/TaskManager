@@ -70,9 +70,6 @@ const taskStore = useTaskStore();
 const employees = ref([]);
 const loading = ref(false);
 
-
-
-
 const errors = ref({
   dueDate: ''
 });
@@ -102,14 +99,15 @@ watch(() => props.taskToEdit, (newTask) => {
     form.value.title = newTask.title;
     form.value.description = newTask.description;
     form.value.priority = newTask.priority;
-    form.value.assignedTo = newTask.assignedTo;
-    form.value.assignedToName = newTask.assignedToName || '';
-    if (newTask.dueDate) {
-      const seconds = newTask.dueDate.seconds || newTask.dueDate._seconds;
-      const d = seconds ? new Date(seconds * 1000) : new Date(newTask.dueDate);
-     if (!isNaN(d.getTime())) {
-        form.value.dueDate = d.toISOString().split('T')[0];
-      }
+    form.value.assignedTo = newTask.assignment?.userId || '';
+    form.value.assignedToName = newTask.assignment?.userName || '';
+    const dueDateData = newTask.metadata?.dueDate;
+    if (dueDateData) {
+       const seconds = dueDateData.seconds || dueDateData._seconds;
+       const d = seconds ? new Date(seconds * 1000) : new Date(dueDateData);
+       if (!isNaN(d.getTime())) {
+         form.value.dueDate = d.toISOString().split('T')[0];
+       }
     }
   } else {
     resetForm();
@@ -171,29 +169,36 @@ const handleSubmit = async () => {
 
   loading.value = true;
   try {
-    if (props.taskToEdit) {
-      const updatedData = {
-        ...form.value,
-      };
-    
-    await taskStore.updateTask(props.taskToEdit.id, updatedData);
-      alert("Task updated successfully!");
-    }else{
-       const finalTaskData = {
-          ...form.value,
-          createdBy: authStore.uid, 
-          status: 'todo',           
-          createdAt: new Date().toISOString()
-        };
+    const taskData = {
+      title: form.value.title,
+      description: form.value.description,
+      assignedTo: form.value.assignedTo,
+      assignedUserName: form.value.assignedToName,
+      priority: form.value.priority,
+      dueDate: form.value.dueDate
+    };
 
-       //await taskStore.addTask({ ...form.value });
-       await taskStore.addTask(finalTaskData);
+    if (props.taskToEdit) {
+    await taskStore.updateTask(props.taskToEdit.id, taskData);
+      alert("Task updated successfully!");
+      emit('task-updated');
+    }else{
+      //  const finalTaskData = {
+      //     ...form.value,
+      //     createdBy: authStore.uid, 
+      //     status: 'todo',           
+      //     createdAt: new Date().toISOString()
+      //   };
+
+       await taskStore.addTask(taskData);
+       //await taskStore.addTask(finalTaskData);
        alert("Task created successfully");
+       emit('task-created'); 
+
 
       }
 
      resetForm();
-     emit('task-created'); 
 
   } catch (err) {
     console.error(err);

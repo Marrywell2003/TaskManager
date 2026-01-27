@@ -11,28 +11,36 @@ router.post('/create', verifyToken, async (req, res) => {
       title, 
       description, 
       assignedTo, 
-      assignedToName, 
+      assignedUserName, 
       priority, 
       dueDate 
     } = req.body;
 
     const managerDoc = await db.collection('users').doc(req.user.uid).get();
-    const managerData = managerDoc.data();
     if (!managerDoc.exists || managerDoc.data().role !== 'Manager') {
       return res.status(403).json({ error: 'Access denied. Just managers can create a new task!!' });
     }
-
+    const managerData = managerDoc.data();
     const newTask = {
       title,
       description,
-      assignedTo,      
-      assignedToName,  
-      createdBy: req.user.uid, 
-      createdByName: managerData.fullName || `${managerData.firstName} ${managerData.lastName}`,
-      status: 'todo',  
+      assignment: {
+         userId: assignedTo,
+         userName: assignedUserName
+      },
+      author: {
+        id: req.user.uid,
+        name: managerData.fullName || `${managerData.firstName} ${managerData.lastName}`,
+        email: req.user.email
+
+      },
+      status: 'todo',
       priority: priority || 'medium',
-      dueDate: dueDate ? admin.firestore.Timestamp.fromDate(new Date(dueDate)) : null,
-      createdAt: admin.firestore.Timestamp.now() 
+      metadata: {
+        createdAt: admin.firestore.Timestamp.now(),
+        updatedAt: admin.firestore.Timestamp.now(),
+        dueDate: dueDate ? admin.firestore.Timestamp.fromDate(new Date(dueDate)) : null
+      }
     };
 
     const docRef = await db.collection('tasks').add(newTask);
@@ -40,8 +48,12 @@ router.post('/create', verifyToken, async (req, res) => {
     res.status(201).json({ 
       id: docRef.id, 
       ...newTask,
-      createdAt: newTask.createdAt.toDate(),
-      dueDate: newTask.dueDate ? newTask.dueDate.toDate() : null
+      metadata: {
+       ...newTask.metadata,
+       createdAt: newTask.metadata.createdAt.toDate(),
+       updatedAt: newTask.metadata.updatedAt.toDate(),
+       dueDate: newTask.metadata.dueDate ? newTask.metadata.dueDate.toDate() : null
+  }
     });
   } catch (error) {
     console.error("Task creation error:", error);
@@ -51,12 +63,20 @@ router.post('/create', verifyToken, async (req, res) => {
 //afisare tasks
 router.get('/all', async (req, res) => {
   try {
-    const tasksSnapshot = await db.collection('tasks').orderBy('createdAt', 'desc').get();
-    const tasks = tasksSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      dueDate: doc.data().dueDate ? doc.data().dueDate.toDate() : null 
-    }));
+    const tasksSnapshot = await db.collection('tasks').orderBy('metadata.createdAt', 'desc').get();
+    const tasks = tasksSnapshot.docs.map(doc => {
+      const data=doc.data();
+      return { 
+        id: doc.id,
+        ...doc.data(),
+        metadata: {
+          ...data.metadata,
+          createdAt: data.metadata?.createdAt?.toDate() || null,
+          updatedAt: data.metadata?.updatedAt?.toDate() || null,
+          dueDate: data.metadata?.dueDate?.toDate() || null
+        } 
+      }   
+    });
     res.json(tasks);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -67,7 +87,7 @@ router.get('/manager/:managerId', async (req, res) => {
   try {
     const { managerId } = req.params;
     const snapshot = await db.collection('tasks')
-                             .where('createdBy', '==', managerId)
+                             .where('author.id', '==', managerId)
                              .get();
    
     const tasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -81,7 +101,7 @@ router.get('/employee/:employeeId', async (req, res) => {
   try {
     const { employeeId } = req.params;
     const snapshot = await db.collection('tasks')
-                             .where('assignedTo', '==', employeeId)
+                             .where('assignment.userId', '==', employeeId)
                              .get();
     
     const tasks = snapshot.docs.map(doc => {
@@ -89,12 +109,12 @@ router.get('/employee/:employeeId', async (req, res) => {
       return {
         id: doc.id,
         ...taskData,
-        dueDate: (taskData.dueDate && typeof taskData.dueDate.toDate === 'function') 
-                 ? taskData.dueDate.toDate() 
-                 : taskData.dueDate, 
-        createdAt: (taskData.createdAt && typeof taskData.createdAt.toDate === 'function') 
-                   ? taskData.createdAt.toDate() 
-                   : taskData.createdAt
+        metadata: {
+          ...taskData.metadata,
+          createdAt: taskData.metadata?.createdAt?.toDate?.() || taskData.metadata?.createdAt,
+          updatedAt: taskData.metadata?.updatedAt?.toDate?.() || taskData.metadata?.updatedAt,
+          dueDate: taskData.metadata?.dueDate?.toDate?.() || taskData.metadata?.dueDate
+        }
       };
     });
     res.json(tasks);
@@ -107,18 +127,29 @@ router.get('/employee/:employeeId', async (req, res) => {
 router.put('/:id', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const updateData = req.body;
+    const { title, description, priority, status, dueDate, assignedTo, assignedUserName } = req.body;
 
-    if (updateData.dueDate) {
-      updateData.dueDate = admin.firestore.Timestamp.fromDate(new Date(updateData.dueDate));
+    const updateData = {};
+    if (title) updateData.title = title;
+    if (description) updateData.description = description;
+    if (priority) updateData.priority = priority;
+    if (status) updateData.status = status;
+    if (assignedTo) {
+      updateData['assignment.userId'] = assignedTo;
+      updateData['assignment.userName'] = assignedUserName || 'Unassigned';
     }
+    updateData['metadata.updatedAt'] = new Date().toISOString();
 
-    await db.collection('tasks').doc(id).update({
-      ...updateData,
-      updatedAt: admin.firestore.Timestamp.now()
-    });
+    if (dueDate) {
+      updateData['metadata.dueDate'] = dueDate;
+    }
+    const taskRef = db.collection('tasks').doc(id);
+    await taskRef.update(updateData);
+    const updatedDoc = await taskRef.get();
+    res.json({ id: updatedDoc.id, ...updatedDoc.data() });
 
-    res.json({ message: 'Task updated successfully' });
+    // await db.collection('tasks').doc(id).update(updateObj);
+    // res.json({ message: 'Task updated successfully' });
   } catch (error) {
     console.error("Error updating task:", error);
     res.status(500).json({ error: 'Failed to update task' });
