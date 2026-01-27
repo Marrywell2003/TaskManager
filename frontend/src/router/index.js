@@ -44,12 +44,6 @@ const router = createRouter({
     component: ManagerTasksView
     },
     {
-    path: '/reports',
-    name: 'Reports',
-    component: () => import('@/views/RaportsView.vue') 
-    },
-    
-    {
     path: '/history',
     name: 'History',
     component: () => import('@/views/HistoryTasksView.vue'),

@@ -6,18 +6,11 @@ import { auth } from '@/firebaseConfig'
 import { signOut } from 'firebase/auth'
 import { useAuthStore } from '@/stores/authStore'
 
-
 const app = createApp(App)
 const pinia = createPinia()
 
 app.use(pinia)
 app.use(router)
-
 const authStore = useAuthStore(pinia);
-// 
-// signOut(auth).then(() => {
-//   authStore.clearSession(); 
-//   console.log("App started: Session cleared via Pinia Store");
-// });
 
 app.mount('#app')

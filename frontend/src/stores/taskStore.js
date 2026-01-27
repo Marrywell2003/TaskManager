@@ -14,7 +14,6 @@ export const useTaskStore = defineStore('tasks', {
         this.tasks = res.data;
      } catch (err) {
         console.error("Error at loading the tasks!!", err);
-        //this.tasks = [];
      } finally {
        this.loading = false;
     }
@@ -34,7 +33,6 @@ export const useTaskStore = defineStore('tasks', {
         const response = await apiService.updateTask(taskId, updatedData);
         const index = this.tasks.findIndex(t => t.id === taskId);
         if (index !== -1) {
-         //this.tasks[index] = { ...this.tasks[index], ...updatedData };
          if (response.data && response.data.id) {
             this.tasks[index] = response.data;
           } else {

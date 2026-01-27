@@ -14,7 +14,7 @@
       <div class="activity-list">
         <div v-for="item in activities" :key="item.id" class="activity-item">
           <div class="activity-info">
-            <StatusBadge :type="item.user === 'Manager' ? 'urgent' : 'pending'">
+            <StatusBadge type="pending">
              {{ item.user }}
             </StatusBadge>
             <span class="action-text">{{ item.action }}</span>
@@ -25,7 +25,7 @@
     </div>
 
     <div class="status-badge" :class="{ online: isOnline }">
-      Server backend: {{ isOnline ? 'Conectat' : 'Deconectat' }}
+      Server - backend: {{ isOnline ? 'Connected' : 'Offline' }}
     </div>
   </div>
 </template>
@@ -42,17 +42,25 @@ const activities = ref([]);
 
 onMounted(async () => {
   try {
-    const [statsRes, statusRes, activityRes] = await Promise.all([
-      apiService.getStats(),
-      apiService.getStatus(),
-      apiService.getActivities() 
-    ]);
-    
+    const statsRes = await apiService.getStats();
     stats.value = statsRes.data;
-    isOnline.value = statusRes.data.status === 'Online';
-    activities.value = activityRes.data; 
   } catch (error) {
-    console.error("Error - Connecting to backend:", error);
+    console.error("Error-summary:", error);
+  }
+
+  try {
+    const statusRes = await apiService.getStatus();
+    isOnline.value = statusRes.data.status === 'Online';
+  } catch (error) {
+    isOnline.value = false;
+  }
+
+  try {
+    const activityRes = await apiService.getActivities();
+    activities.value = activityRes.data || [];
+  } catch (error) {
+    console.error("Error-activities:", error);
+    //activities.value = [];
   }
 });
 </script>

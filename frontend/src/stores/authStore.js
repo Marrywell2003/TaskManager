@@ -27,8 +27,6 @@ export const useAuthStore = defineStore('auth', {
       this.userRole = null;
       this.userName = null;
       this.uid = null;
-      //localStorage.removeItem('userRole');
-      //localStorage.removeItem('userName');
       localStorage.clear();
     }
   }

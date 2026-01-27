@@ -6,6 +6,7 @@ const { db, admin } = require('../config/firebaseAdmin');
 const verifyToken = require('../middleware/authMiddleware');
 //creare new task
 router.post('/create', verifyToken, async (req, res) => {
+  
   try {
     const { 
       title, 
@@ -15,6 +16,9 @@ router.post('/create', verifyToken, async (req, res) => {
       priority, 
       dueDate 
     } = req.body;
+    // if (!title || !assignedTo) {
+    //  return res.status(400).json({ error: "Title and person - required" });
+    // }
 
     const managerDoc = await db.collection('users').doc(req.user.uid).get();
     if (!managerDoc.exists || managerDoc.data().role !== 'Manager') {
@@ -147,10 +151,8 @@ router.put('/:id', verifyToken, async (req, res) => {
     await taskRef.update(updateData);
     const updatedDoc = await taskRef.get();
     res.json({ id: updatedDoc.id, ...updatedDoc.data() });
-
-    // await db.collection('tasks').doc(id).update(updateObj);
-    // res.json({ message: 'Task updated successfully' });
-  } catch (error) {
+  } 
+  catch (error) {
     console.error("Error updating task:", error);
     res.status(500).json({ error: 'Failed to update task' });
   }

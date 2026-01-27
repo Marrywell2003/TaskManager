@@ -9,7 +9,6 @@
         <template v-if="authStore.isManager">
           <div class="menu-label">ADMINISTRARE</div>
           <router-link to="/manage-tasks"> Manage tasks </router-link>
-          <!-- <router-link to="/reports"> Raports </router-link> -->
         </template>
 
         <template v-if="authStore.userRole === 'Employee'">
@@ -52,8 +51,6 @@ onMounted(() => {
   onAuthStateChanged(auth, async(user) => {
     if (user) {
       try {
-        //const token = await user.getIdToken();
-
         const response = await apiService.getUserProfile(user.uid);
         authStore.saveUserSession(response.data); 
       } catch (error) {
